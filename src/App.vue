@@ -4,13 +4,12 @@
     <h2 class="text-center text-light m-0">Todo</h2>
   </div>
   <div id="AddTodoConatiner" class="d-flex align-items-center justify-content-between my-3">
-    <input type="text" placeholder="Please enter new todo..." class="w-75 p-2 rounded" v-model="newTodo">
-    <button class="btn btn-primary px-4" @click="addBtnHandler">Add</button>
+    <input type="text" placeholder="Please enter new todo..." class="w-75 p-2 rounded" v-model="newTodo" @keypress="(e)=>e.key == 'Enter'? addTodohandler() : ''">
+    <button class="btn btn-primary px-4" @click="addTodohandler">Add</button>
   </div>
   <div id="todo-list">
     <ul class="list-group" >
-
-      <li class="list-group-item d-flex justify-content-between align-items-center" v-for="(todo,index) in todos" :key="index" :class="todo.isDone ? 'bg-silver' :'bg-light '">
+      <li class="list-group-item d-flex justify-content-between align-items-center" v-for="(todo,index) in store.todos" :key="index" :class="todo.isDone ? 'bg-silver' :'bg-light '">
         <h4 id="todoName" class="m-0" :class="todo.isDone ? 'line-through text-muted ' : ''">{{ todo.title }}</h4>
         <div id="icons">
           <span class="px-2 py-1 rounded me-2" :class="todo.isDone ? 'bg-secondary' : 'bg-success'" @click="checkedTodo(todo.id)">
@@ -21,55 +20,85 @@
           </span>
         </div>
       </li>
-
     </ul>
   </div>
 </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
 
+// use pinia
+import { ref } from 'vue';
+import { useTodosStore } from './store/todos';
+const store = useTodosStore()
 const newTodo = ref(null)
-const todos = ref([])
-function addBtnHandler(){
+
+
+function addTodohandler(){
   const time = new Date()
-  const todoDetail = {
-    id : time.getTime(),
-    title:newTodo.value,
-    isDone: false
+  const newTodoDetails = {
+    id: time.getTime(),
+    title : newTodo.value,
+    isDone : false
   }
-  todos.value.push(todoDetail)
-  localStorage.setItem("todos",JSON.stringify(todos.value))
-  newTodo.value = ""
+  store.setTodo(newTodoDetails)
+  newTodo.value = ''
+}
+
+function deleteTodo(todoId){
+  store.deleteTodo(todoId)
+}
+
+function checkedTodo(todoId){
+  store.checkedTodo(todoId)
+}
+
+
+// before use pinia
+// import { onMounted, ref } from "vue";
+
+// const newTodo = ref(null)
+// const todos = ref([])
+// function addBtnHandler(){
+//   const time = new Date()
+//   const todoDetail = {
+//     id : time.getTime(),
+//     title:newTodo.value,
+//     isDone: false
+//   }
+//   console.log(todoDetail);
+//   todos.value.push(todoDetail)
+//   localStorage.setItem("todos",JSON.stringify(todos.value))
+//   newTodo.value = ""
   
-}
-onMounted (()=>{
-  loadData()
-})
+// }
+// onMounted (()=>{
+//   loadData()
+// })
 
-function deleteTodo (id){
-  const todosFilterd = JSON.parse(localStorage.getItem("todos")).filter(e => {return e.id !== id})
-  localStorage.setItem("todos",JSON.stringify(todosFilterd))
-  loadData()
-}
-function loadData (){
-  todos.value = []
-  todos.value =JSON.parse(localStorage.getItem("todos"))
-  // Object.assign(todos.value ,JSON.parse(localStorage.getItem("todos")))
-}
+// function deleteTodo (id){
+//   const todosFilterd = JSON.parse(localStorage.getItem("todos")).filter(e => {return e.id !== id})
+//   localStorage.setItem("todos",JSON.stringify(todosFilterd))
+//   loadData()
+// }
+// function loadData (){
+//   todos.value = []
+//   const storedTodos = JSON.parse(localStorage.getItem("todos"))  
+//   todos.value = storedTodos ? storedTodos : []
+//   // Object.assign(todos.value ,JSON.parse(localStorage.getItem("todos")))
+// }
 
-function checkedTodo(id){
-  const todoList =  getTodos()
-  todoList.forEach(element => {
-    element.id === id ? element.isDone = !element.isDone : ""
-  });
-  localStorage.setItem("todos",JSON.stringify(todoList))
-  loadData()
-}
-function getTodos(){
-  return JSON.parse(localStorage.getItem("todos"))
-}
+// function checkedTodo(id){
+//   const todoList =  getTodos()
+//   todoList.forEach(element => {
+//     element.id === id ? element.isDone = !element.isDone : ""
+//   });
+//   localStorage.setItem("todos",JSON.stringify(todoList))
+//   loadData()
+// }
+// function getTodos(){
+//   return JSON.parse(localStorage.getItem("todos"))
+// }
 </script>
 
 <style>
